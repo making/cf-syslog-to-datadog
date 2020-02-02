@@ -1,0 +1,22 @@
+applications:
+- name: syslog-to-datadog
+  memory: 2G
+  disk_quota: 2G
+  instances: 1
+  timeout: 180
+  docker:
+    image: docker.elastic.co/logstash/logstash:7.5.2
+  command: |
+    curl -s -L -J -o pipeline.tar.gz https://github.com/making/pas-monitoring/archive/datadog.tar.gz && \
+    tar xzf pipeline.tar.gz && \
+    rm -f pipeline.tar.gz && \
+    rm -f /usr/share/logstash/pipeline/logstash.conf && \
+    rm -f pas-monitoring-datadog/elastic/pipeline/output-02-stdout.conf && \
+    rm -f pas-monitoring-datadog/elastic/pipeline/output-01-es.conf && \
+    mv pas-monitoring-datadog/elastic/pipeline/*.conf /usr/share/logstash/pipeline/ && \
+    rm -rf pas-monitoring-datadog && \
+    /usr/share/logstash/bin/logstash-plugin install logstash-output-datadog_logs && \
+    /usr/local/bin/docker-entrypoint
+  env:
+    XPACK_MANAGEMENT_ENABLED: false
+    XPACK_MONITORING_ENABLED: false
